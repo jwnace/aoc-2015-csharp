@@ -2,14 +2,7 @@ namespace aoc_2015;
 
 public static class Day07
 {
-    private static readonly string[] Input = File.ReadAllLines("../../input/day07.txt");
-
-    private record Wire
-    {
-        public string Name { get; set; } = "";
-        public string Operation { get; set; } = "";
-        public int? Signal { get; set; } = null;
-    }
+    private static readonly string[] Input = File.ReadAllLines("../../../../../input/day07.txt");
 
     public static int Part1()
     {
@@ -68,7 +61,7 @@ public static class Day07
             var b = parts[1];
 
             var bValue = wires.Any(x => x.Name == b)
-                ? (wires.Single(x => x.Name == b).Signal ?? ProcessWire(wires, wires.Single(x => x.Name == b)))
+                ? wires.Single(x => x.Name == b).Signal ?? ProcessWire(wires, wires.Single(x => x.Name == b))
                 : int.Parse(b);
 
             w.Signal = ~bValue;
@@ -78,11 +71,11 @@ public static class Day07
             var (a, b, c) = (parts[0], parts[1], parts[2]);
 
             var aValue = wires.Any(x => x.Name == a)
-                ? (wires.Single(x => x.Name == a).Signal ?? ProcessWire(wires, wires.Single(x => x.Name == a)))
+                ? wires.Single(x => x.Name == a).Signal ?? ProcessWire(wires, wires.Single(x => x.Name == a))
                 : int.Parse(a);
 
             var cValue = wires.Any(x => x.Name == c)
-                ? (wires.Single(x => x.Name == c).Signal ?? ProcessWire(wires, wires.Single(x => x.Name == c)))
+                ? wires.Single(x => x.Name == c).Signal ?? ProcessWire(wires, wires.Single(x => x.Name == c))
                 : int.Parse(c);
 
             var signal = b switch
@@ -90,12 +83,20 @@ public static class Day07
                 "AND" => aValue & cValue,
                 "OR" => aValue | cValue,
                 "LSHIFT" => aValue << cValue,
-                "RSHIFT" => aValue >> cValue
+                "RSHIFT" => aValue >> cValue,
+                _ => throw new ArgumentOutOfRangeException()
             };
 
             w.Signal = signal;
         }
 
         return w.Signal!.Value;
+    }
+
+    private record Wire
+    {
+        public string Name { get; init; } = "";
+        public string Operation { get; init; } = "";
+        public int? Signal { get; set; }
     }
 }
