@@ -2,172 +2,100 @@ namespace aoc_2015;
 
 public static class Day07
 {
-    private static readonly string[] SmallInput = File.ReadAllLines("../../../../../input/day07_sm.txt");
-    private static readonly string[] Input = File.ReadAllLines("../../../../../input/day07.txt");
-
-    private static List<Wire> Wires = new List<Wire>();
+    private static readonly string[] Input = File.ReadAllLines("../../input/day07.txt");
 
     private record Wire
     {
         public string Name { get; set; } = "";
-        public string InputString { get; set; } = "";
-        public int? Output { get; set; }
+        public string Operation { get; set; } = "";
+        public int? Signal { get; set; } = null;
     }
 
     public static int Part1()
     {
-        Wires = new List<Wire>();
-        foreach (var line in Input)
-        {
-            var leftAndRight = line.Split(" -> ");
-            var left = leftAndRight[0];
-            var right = leftAndRight[1];
-
-            Wires.Add(new Wire
-            {
-                Name = right,
-                InputString = left
-            });
-        }
-
-        return ProcessWire(Wires.Single(x => x.Name == "a"));
-    }
-
-    private static int ProcessWire(Wire w)
-    {
-        var left = w.InputString.Split(' ');
-
-        if (left.Length == 1)
-        {
-            // the only value is a value
-            var a = left[0];
-            if (a is "RSHIFT" or "OR" or "LSHIFT" or "AND" or "NOT")
-            {
-                throw new Exception("Received an operator where a value was expected.");
-            }
-
-            // the value `a` can be a number or a string
-            if (int.TryParse(left.Single(), out var signal))
-            {
-                w.Output = signal;
-            }
-            else
-            {
-                w.Output = ProcessWire(Wires.Single(x => x.Name == left.Single()));
-            }
-        }
-        else if (left.Length == 2)
-        {
-            // the left value is an operator, and the right value is a value
-            var (a, b) = (left[0], left[1]);
-            if (a != "RSHIFT" && a != "OR" && a != "LSHIFT" && a != "AND" && a != "NOT")
-            {
-                throw new Exception("Received a value where an operator was expected.");
-            }
-
-            if (b is "RSHIFT" or "OR" or "LSHIFT" or "AND" or "NOT")
-            {
-                throw new Exception("Received an operator where a value was expected.");
-            }
-
-            // the value `b` can be a number or a string
-            var bValue = Wires.Any(x => x.Name == b)
-                ? (int)(Wires.Single(x => x.Name == b).Output ?? ProcessWire(Wires.Single(x => x.Name == b)))
-                : int.Parse(b);
-
-            if (a == "NOT")
-            {
-                var signal = (ushort) (~bValue);
-                w.Output = signal;
-            }
-        }
-        else if (left.Length == 3)
-        {
-            // the middle value is an operator, and the left and right values are values
-            var (a, b, c) = (left[0], left[1], left[2]);
-            if (a is "RSHIFT" or "OR" or "LSHIFT" or "AND" or "NOT")
-            {
-                throw new Exception("Received an operator where a value was expected.");
-            }
-
-            if (b != "RSHIFT" && b != "OR" && b != "LSHIFT" && b != "AND" && b != "NOT")
-            {
-                throw new Exception("Received a value where an operator was expected.");
-            }
-
-            if (c is "RSHIFT" or "OR" or "LSHIFT" or "AND" or "NOT")
-            {
-                throw new Exception("Received an operator where a value was expected.");
-            }
-
-            // the values `a` and `c` can be a number or a string
-            var aValue = Wires.Any(x => x.Name == a)
-                ? (int)(Wires.Single(x => x.Name == a).Output ?? ProcessWire(Wires.Single(x => x.Name == a)))
-                : int.Parse(a);
-            var cValue = Wires.Any(x => x.Name == c)
-                ? (int)(Wires.Single(x => x.Name == c).Output ?? ProcessWire(Wires.Single(x => x.Name == c)))
-                : int.Parse(c);
-
-            if (b == "AND")
-            {
-                var signal = aValue & cValue;
-                w.Output = signal;
-            }
-            else if (b == "OR")
-            {
-                var signal = aValue | cValue;
-                w.Output = signal;
-            }
-            else if (b == "LSHIFT")
-            {
-                var signal = aValue << cValue;
-                w.Output = signal;
-            }
-            else if (b == "RSHIFT")
-            {
-                var signal = aValue >> cValue;
-                w.Output = signal;
-            }
-        }
-
-        return (int)w.Output!;
+        var wires = PopulateWires();
+        return ProcessWire(wires, wires.Single(x => x.Name == "a"));
     }
 
     public static int Part2()
     {
-        Wires = new List<Wire>();
+        var wires = PopulateWires();
+
+        var signalA = ProcessWire(wires, wires.Single(x => x.Name == "a"));
+
+        wires = PopulateWires();
+
+        var wireB = wires.Single(x => x.Name == "b");
+        wireB.Signal = signalA;
+
+        return ProcessWire(wires, wires.Single(x => x.Name == "a"));
+    }
+
+    private static List<Wire> PopulateWires()
+    {
+        var wires = new List<Wire>();
+
         foreach (var line in Input)
         {
-            var leftAndRight = line.Split(" -> ");
-            var left = leftAndRight[0];
-            var right = leftAndRight[1];
+            var values = line.Split(" -> ");
+            var left = values[0];
+            var right = values[1];
 
-            Wires.Add(new Wire
+            wires.Add(new Wire
             {
                 Name = right,
-                InputString = left
+                Operation = left
             });
         }
 
-        var temp = ProcessWire(Wires.Single(x => x.Name == "a"));
+        return wires;
+    }
 
-        Wires = new List<Wire>();
-        foreach (var line in Input)
+    private static int ProcessWire(List<Wire> wires, Wire w)
+    {
+        var parts = w.Operation.Split(' ');
+
+        if (parts.Length == 1)
         {
-            var leftAndRight = line.Split(" -> ");
-            var left = leftAndRight[0];
-            var right = leftAndRight[1];
+            var a = parts[0];
 
-            Wires.Add(new Wire
+            var aValue = int.TryParse(a, out var signal) ? signal : ProcessWire(wires, wires.Single(x => x.Name == a));
+
+            w.Signal = aValue;
+        }
+        else if (parts.Length == 2)
+        {
+            var b = parts[1];
+
+            var bValue = wires.Any(x => x.Name == b)
+                ? (wires.Single(x => x.Name == b).Signal ?? ProcessWire(wires, wires.Single(x => x.Name == b)))
+                : int.Parse(b);
+
+            w.Signal = ~bValue;
+        }
+        else if (parts.Length == 3)
+        {
+            var (a, b, c) = (parts[0], parts[1], parts[2]);
+
+            var aValue = wires.Any(x => x.Name == a)
+                ? (wires.Single(x => x.Name == a).Signal ?? ProcessWire(wires, wires.Single(x => x.Name == a)))
+                : int.Parse(a);
+
+            var cValue = wires.Any(x => x.Name == c)
+                ? (wires.Single(x => x.Name == c).Signal ?? ProcessWire(wires, wires.Single(x => x.Name == c)))
+                : int.Parse(c);
+
+            var signal = b switch
             {
-                Name = right,
-                InputString = left
-            });
+                "AND" => aValue & cValue,
+                "OR" => aValue | cValue,
+                "LSHIFT" => aValue << cValue,
+                "RSHIFT" => aValue >> cValue
+            };
+
+            w.Signal = signal;
         }
 
-        var b = Wires.Single(x => x.Name == "b");
-        b.Output = temp;
-        
-        return ProcessWire(Wires.Single(x => x.Name == "a"));
+        return w.Signal!.Value;
     }
 }
