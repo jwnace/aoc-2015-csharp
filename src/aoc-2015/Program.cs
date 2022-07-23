@@ -22,5 +22,8 @@ using aoc_2015;
 // Console.WriteLine($"Day 06 Part 1: {Day06.Part1()}");
 // Console.WriteLine($"Day 06 Part 2: {Day06.Part2()}");
 
-Console.WriteLine($"Day 07 Part 1: {Day07.Part1()}");
-Console.WriteLine($"Day 07 Part 2: {Day07.Part2()}");
+// Console.WriteLine($"Day 07 Part 1: {Day07.Part1()}");
+// Console.WriteLine($"Day 07 Part 2: {Day07.Part2()}");
+
+Console.WriteLine($"Day 08 Part 1: {Day08.Part1()}");
+Console.WriteLine($"Day 08 Part 2: {Day08.Part2()}");
