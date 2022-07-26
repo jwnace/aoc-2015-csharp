@@ -1,11 +1,14 @@
-﻿namespace aoc_2015;
+﻿using System.Linq;
+
+namespace aoc_2015;
 
 public class Day09
 {
     public static int Part1()
     {
-        var input = File.ReadAllLines("../../../../../input/day09_sm.txt");
+        var input = File.ReadAllLines("../../../../../input/day09.txt");
         var distances = new Dictionary<string[], int>();
+        var locations = new Dictionary<string, bool>();
 
         foreach (var line in input)
         {
@@ -15,64 +18,88 @@ public class Day09
             var dist = int.Parse(values[4]);
 
             distances[new[] { start, end }] = dist;
+            locations[start] = false;
+            locations[end] = false;
         }
 
-        var locations = distances.SelectMany(x => x.Key).Distinct().ToDictionary(x => x, _ => false).ToList();
+        var paths = GetPermutations(locations.ToArray()).ToList();
+
         var minDistance = int.MaxValue;
         
-        foreach (var start in locations)
+        foreach (var path in paths)
         {
-            // HACK: make a copy of `memo` and `locations` every time we travel
-            var distance = Travel(new Dictionary<string[], int>(distances), new Dictionary<string, bool>(locations), start.Key);
-
-            Console.WriteLine($"distance: {distance}");
+            var distance = 0;
             
+            for (int i = 0; i < path.Length - 1; i++)
+            {
+                var d = distances
+                    .Where(x => x.Key.Contains(path[i].Key) && x.Key.Contains(path[i + 1].Key))
+                    .Select(x => x.Value)
+                    .Single();
+                
+                distance += d;
+            }
+
             if (distance < minDistance)
             {
                 minDistance = distance;
             }
         }
-
+        
         return minDistance;
     }
-
-    private static int Travel(Dictionary<string[],int> memo, Dictionary<string, bool> visits, string start)
+    
+    private static IEnumerable<T[]> GetPermutations<T>(T[] values)
     {
-        visits[start] = true;
-        
-        if (visits.All(x => x.Value))
-        {
-            return 0;
-        }
-        
-        var next = memo
-            .Where(x => x.Key.Contains(start))
-            .Select(x => new
-            {
-                Location = x.Key.Single(y => y != start),
-                Distance = x.Value
-            })
-            .Where(x => visits[x.Location] == false)
-            .ToList();
+        if (values.Length == 1)
+            return new[] {values};
 
-        if (next.Count() != 1)
-        {
-            Console.WriteLine($"next.Count() = {next.Count()}");
-        }
-        
-        var distances = new List<int>();
-        
-        foreach (var n in next)
-        {
-            distances.Add(n.Distance + Travel(memo, visits, n.Location));
-        }
-
-        return distances.Min();
+        return values.SelectMany(v => GetPermutations(values.Except(new[] {v}).ToArray()),
+            (v, p) => new[] {v}.Concat(p).ToArray());
     }
+    
 
     public static int Part2()
-    {
-        var input = File.ReadAllLines("../../../../../input/day09_sm.txt");
-        return input.Length;
+    {var input = File.ReadAllLines("../../../../../input/day09.txt");
+        var distances = new Dictionary<string[], int>();
+        var locations = new Dictionary<string, bool>();
+
+        foreach (var line in input)
+        {
+            var values = line.Split(' ');
+            var start = values[0];
+            var end = values[2];
+            var dist = int.Parse(values[4]);
+
+            distances[new[] { start, end }] = dist;
+            locations[start] = false;
+            locations[end] = false;
+        }
+
+        var paths = GetPermutations(locations.ToArray()).ToList();
+
+        var maxDistance = 0;
+        
+        foreach (var path in paths)
+        {
+            var distance = 0;
+            
+            for (int i = 0; i < path.Length - 1; i++)
+            {
+                var d = distances
+                    .Where(x => x.Key.Contains(path[i].Key) && x.Key.Contains(path[i + 1].Key))
+                    .Select(x => x.Value)
+                    .Single();
+                
+                distance += d;
+            }
+
+            if (distance > maxDistance)
+            {
+                maxDistance = distance;
+            }
+        }
+        
+        return maxDistance;
     }
 }
