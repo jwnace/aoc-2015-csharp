@@ -13,6 +13,6 @@ public class Day12Tests
     [Fact]
     public void Part2()
     {
-        Assert.Equal(-1, Day12.Part2());
+        Assert.Equal(87842, Day12.Part2());
     }
 }
