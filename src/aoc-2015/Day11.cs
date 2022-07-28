@@ -2,7 +2,7 @@
 
 namespace aoc_2015;
 
-public class Day11
+public static class Day11
 {
     public static string Part1()
     {
