@@ -5,23 +5,23 @@ public static class Day18
     public static int Part1()
     {
         var input = File.ReadAllLines("../../../../../input/day18.txt");
-        var memo = new Dictionary<(int, int), bool>();
+        var grid = new Dictionary<(int, int), bool>();
 
-        for (int r = 0; r < input.Length; r++)
+        for (var row = 0; row < input.Length; row++)
         {
-            for (int c = 0; c < input[r].Length; c++)
+            for (var col = 0; col < input[row].Length; col++)
             {
-                memo[(r, c)] = input[r][c] == '#';
+                grid[(row, col)] = input[row][col] == '#';
             }
         }
 
-        for (int i = 0; i < 100; i++)
+        for (var i = 0; i < 100; i++)
         {
-            var memo2 = new Dictionary<(int, int), bool>(memo);
+            var temp = new Dictionary<(int, int), bool>(grid);
 
-            for (int row = 0; row < 100; row++)
+            for (var row = 0; row < 100; row++)
             {
-                for (int col = 0; col < 100; col++)
+                for (var col = 0; col < 100; col++)
                 {
                     var a = (row - 1, col - 1);
                     var b = (row - 1, col);
@@ -32,106 +32,77 @@ public static class Day18
                     var g = (row + 1, col);
                     var h = (row + 1, col + 1);
 
-                    var a1 = memo.ContainsKey(a) && memo[a];
-                    var b1 = memo.ContainsKey(b) && memo[b];
-                    var c1 = memo.ContainsKey(c) && memo[c];
-                    var d1 = memo.ContainsKey(d) && memo[d];
-                    var e1 = memo.ContainsKey(e) && memo[e];
-                    var f1 = memo.ContainsKey(f) && memo[f];
-                    var g1 = memo.ContainsKey(g) && memo[g];
-                    var h1 = memo.ContainsKey(h) && memo[h];
+                    var a1 = grid.ContainsKey(a) && grid[a];
+                    var b1 = grid.ContainsKey(b) && grid[b];
+                    var c1 = grid.ContainsKey(c) && grid[c];
+                    var d1 = grid.ContainsKey(d) && grid[d];
+                    var e1 = grid.ContainsKey(e) && grid[e];
+                    var f1 = grid.ContainsKey(f) && grid[f];
+                    var g1 = grid.ContainsKey(g) && grid[g];
+                    var h1 = grid.ContainsKey(h) && grid[h];
 
                     var count = new[] { a1, b1, c1, d1, e1, f1, g1, h1 }.Count(x => x);
 
-                    if (memo[(row, col)])
+                    if (grid[(row, col)] && count is not (2 or 3))
                     {
-                        if (count is 2 or 3)
-                        {
-                            memo2[(row, col)] = true;
-                        }
-                        else
-                        {
-                            memo2[(row, col)] = false;
-                        }
+                        temp[(row, col)] = false;
                     }
 
-                    if (!memo[(row, col)])
+                    if (!grid[(row, col)] && (count == 3))
                     {
-                        if (count == 3)
-                        {
-                            memo2[(row, col)] = true;
-                        }
+                        temp[(row, col)] = true;
                     }
                 }
             }
 
-            memo = memo2;
+            grid = temp;
         }
 
-        return memo.Count(x => x.Value);
+        return grid.Count(x => x.Value);
     }
 
     public static int Part2()
     {
         var input = File.ReadAllLines("../../../../../input/day18.txt");
-        var memo = new Dictionary<(int, int), bool>();
+        var grid = new Dictionary<(int, int), bool>();
 
-        for (int r = 0; r < input.Length; r++)
+        for (var row = 0; row < input.Length; row++)
         {
-            for (int c = 0; c < input[r].Length; c++)
+            for (var col = 0; col < input[row].Length; col++)
             {
-                if (r == 0 && c == 0)
+                switch (row, col)
                 {
-                    memo[(r, c)] = true;
-                }
-                else if (r == 0 && c == 99)
-                {
-                    memo[(r, c)] = true;
-                }
-                else if (r == 99 && c == 99)
-                {
-                    memo[(r, c)] = true;
-                }
-                else if (r == 99 && c == 0)
-                {
-                    memo[(r, c)] = true;
-                }
-                else
-                {
-                    memo[(r, c)] = input[r][c] == '#';
+                    case (0, 0):
+                    case (0, 99):
+                    case (99, 99):
+                    case (99, 0):
+                        grid[(row, col)] = true;
+                        break;
+                    default:
+                        grid[(row, col)] = input[row][col] == '#';
+                        break;
                 }
             }
         }
 
-        for (int i = 0; i < 100; i++)
+        for (var i = 0; i < 100; i++)
         {
-            var memo2 = new Dictionary<(int, int), bool>(memo);
+            var temp = new Dictionary<(int, int), bool>(grid);
 
-            for (int row = 0; row < 100; row++)
+            for (var row = 0; row < 100; row++)
             {
-                for (int col = 0; col < 100; col++)
+                for (var col = 0; col < 100; col++)
                 {
-                    if (row == 0 && col == 0)
+                    switch (row, col)
                     {
-                        memo[(row, col)] = true;
-                        continue;
+                        case (0, 0):
+                        case (0, 99):
+                        case (99, 99):
+                        case (99, 0):
+                            grid[(row, col)] = true;
+                            continue;
                     }
-                    else if (row == 0 && col == 99)
-                    {
-                        memo[(row, col)] = true;
-                        continue;
-                    }
-                    else if (row == 99 && col == 99)
-                    {
-                        memo[(row, col)] = true;
-                        continue;
-                    }
-                    else if (row == 99 && col == 0)
-                    {
-                        memo[(row, col)] = true;
-                        continue;
-                    }
-                    
+
                     var a = (row - 1, col - 1);
                     var b = (row - 1, col);
                     var c = (row - 1, col + 1);
@@ -141,42 +112,32 @@ public static class Day18
                     var g = (row + 1, col);
                     var h = (row + 1, col + 1);
 
-                    var a1 = memo.ContainsKey(a) && memo[a];
-                    var b1 = memo.ContainsKey(b) && memo[b];
-                    var c1 = memo.ContainsKey(c) && memo[c];
-                    var d1 = memo.ContainsKey(d) && memo[d];
-                    var e1 = memo.ContainsKey(e) && memo[e];
-                    var f1 = memo.ContainsKey(f) && memo[f];
-                    var g1 = memo.ContainsKey(g) && memo[g];
-                    var h1 = memo.ContainsKey(h) && memo[h];
+                    var a1 = grid.ContainsKey(a) && grid[a];
+                    var b1 = grid.ContainsKey(b) && grid[b];
+                    var c1 = grid.ContainsKey(c) && grid[c];
+                    var d1 = grid.ContainsKey(d) && grid[d];
+                    var e1 = grid.ContainsKey(e) && grid[e];
+                    var f1 = grid.ContainsKey(f) && grid[f];
+                    var g1 = grid.ContainsKey(g) && grid[g];
+                    var h1 = grid.ContainsKey(h) && grid[h];
 
                     var count = new[] { a1, b1, c1, d1, e1, f1, g1, h1 }.Count(x => x);
 
-                    if (memo[(row, col)])
+                    if (grid[(row, col)] && count is not (2 or 3))
                     {
-                        if (count is 2 or 3)
-                        {
-                            memo2[(row, col)] = true;
-                        }
-                        else
-                        {
-                            memo2[(row, col)] = false;
-                        }
+                        temp[(row, col)] = false;
                     }
 
-                    if (!memo[(row, col)])
+                    if (!grid[(row, col)] && count == 3)
                     {
-                        if (count == 3)
-                        {
-                            memo2[(row, col)] = true;
-                        }
+                        temp[(row, col)] = true;
                     }
                 }
             }
 
-            memo = memo2;
+            grid = temp;
         }
 
-        return memo.Count(x => x.Value);
+        return grid.Count(x => x.Value);
     }
 }
