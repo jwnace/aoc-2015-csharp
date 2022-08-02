@@ -4,82 +4,34 @@ namespace aoc_2015;
 
 public static class Day17
 {
-    private static readonly int TARGET_SIZE = 150;
-
     private record Container(string Name, int Size);
 
     public static int Part1()
     {
-        var stopwatch = new Stopwatch();
-
-        stopwatch.Start();
-
         var containers = File.ReadAllLines("../../../../../input/day17.txt")
             .OrderBy(int.Parse)
-            .Select((x, i) => new Container($"{(char) (65 + i)}", int.Parse(x)))
+            // HACK: do I really need the name property? the combination logic depends on it for now...
+            .Select((x, i) => new Container($"{(char)(65 + i)}", int.Parse(x)))
             .ToList();
 
-        stopwatch.Stop();
-        Console.WriteLine($"Parsing the input took {stopwatch.Elapsed.TotalSeconds} seconds.");
-        stopwatch.Reset();
-
-        stopwatch.Start();
-
-        var combinations = GetCombinations(containers);
-
-        stopwatch.Stop();
-        Console.WriteLine($"GetCombinations() took {stopwatch.Elapsed.TotalSeconds} seconds.");
-        stopwatch.Reset();
-
-        stopwatch.Start();
-
-        var query = combinations.Where(x => x.Sum(y => y.Size) == TARGET_SIZE).ToList();
-
-        stopwatch.Stop();
-        Console.WriteLine($"The query took {stopwatch.Elapsed.TotalSeconds} seconds.");
-        stopwatch.Reset();
-
-        return query.Count();
+        return GetCombinations(containers).Count(x => x.Sum(y => y.Size) == 150);
     }
 
     public static int Part2()
     {
-        var stopwatch = new Stopwatch();
-
-        stopwatch.Start();
-
         var containers = File.ReadAllLines("../../../../../input/day17.txt")
             .OrderBy(int.Parse)
-            .Select((x, i) => new Container($"{(char) (65 + i)}", int.Parse(x)))
+            // HACK: do I really need the name property? the combination logic depends on it for now...
+            .Select((x, i) => new Container($"{(char)(65 + i)}", int.Parse(x)))
             .ToList();
 
-        stopwatch.Stop();
-        Console.WriteLine($"Parsing the input took {stopwatch.Elapsed.TotalSeconds} seconds.");
-        stopwatch.Reset();
-
-        stopwatch.Start();
-
-        var combinations = GetCombinations(containers);
-
-        stopwatch.Stop();
-        Console.WriteLine($"GetCombinations() took {stopwatch.Elapsed.TotalSeconds} seconds.");
-        stopwatch.Reset();
-
-        stopwatch.Start();
-
-        var query = combinations
-            .Where(x => x.Sum(y => y.Size) == TARGET_SIZE)
+        var query = GetCombinations(containers)
+            .Where(x => x.Sum(y => y.Size) == 150)
             .ToList();
 
         var minCount = query.Min(y => y.Count);
 
-        var result = query.Where(x => x.Count == minCount).ToList();
-
-        stopwatch.Stop();
-        Console.WriteLine($"The query took {stopwatch.Elapsed.TotalSeconds} seconds.");
-        stopwatch.Reset();
-
-        return result.Count();
+        return query.Count(x => x.Count == minCount);
     }
 
     private static List<List<Container>> GetCombinations(List<Container> containers)
@@ -104,8 +56,8 @@ public static class Day17
 
         return GetCombinations(containers, length - 1)
             .SelectMany(
-                x => containers.Where(c => c.Name.CompareTo(x.Last().Name) > 0),
-                (t1, t2) => t1.Concat(new List<Container> { t2 }).ToList()
+                x => containers.Where(y => y.Name.CompareTo(x.Last().Name) > 0),
+                (a, b) => a.Concat(new List<Container> { b }).ToList()
             ).ToList();
     }
 }
