@@ -49,17 +49,19 @@ public static class Day21
         {
             var boss = CreateBoss();
             var player = CreatePlayer();
-            
+
             EquipPlayer(player, loadout);
-            
+
             var winner = Fight(player, boss);
 
             var cost = loadout.Sum(x => x.Cost);
-            
+
             Console.WriteLine($"cost: {cost}, {winner.Name} wins!");
-            
+
             if (winner.Name == "Player")
+            {
                 return cost;
+            }
         }
 
         return -1;
@@ -74,10 +76,14 @@ public static class Day21
     private static IEnumerable<IEnumerable<T>> GetKCombs<T>(IEnumerable<T> list, int length) where T : IComparable
     {
         if (length == 0)
+        {
             return new List<List<T>> { new() };
+        }
 
         if (length == 1)
+        {
             return list.Select(t => new[] { t });
+        }
 
         return GetKCombs(list, length - 1)
             .SelectMany(
@@ -103,18 +109,23 @@ public static class Day21
         var possibleEquipment = new List<List<Item>>();
 
         for (var i = 0; i < w.Count; i++)
-        for (var j = 0; j < a.Count; j++)
-        for (var k = 0; k < r.Count; k++)
         {
-            var wTemp = w[i];
-            var aTemp = a[j];
-            var rTemp = r[k];
+            for (var j = 0; j < a.Count; j++)
+            {
+                for (var k = 0; k < r.Count; k++)
+                {
+                    var wTemp = w[i];
+                    var aTemp = a[j];
+                    var rTemp = r[k];
 
-            var equipment = wTemp.Set.Union(aTemp.Set.Union(rTemp.Set)).ToList();
-            possibleEquipment.Add(equipment);
+                    var equipment = wTemp.Set.Union(aTemp.Set.Union(rTemp.Set)).ToList();
+                    possibleEquipment.Add(equipment);
+                }
+            }
         }
 
-        var query = possibleEquipment.Select(x => new { Cost = x.Sum(y => y.Cost), Set = x }).OrderBy(x => x.Cost).Select(x => x.Set)
+        var query = possibleEquipment.Select(x => new { Cost = x.Sum(y => y.Cost), Set = x }).OrderBy(x => x.Cost)
+            .Select(x => x.Set)
             .ToList();
 
         return query;
@@ -244,17 +255,19 @@ public static class Day21
         {
             var boss = CreateBoss();
             var player = CreatePlayer();
-            
+
             EquipPlayer(player, loadout);
-            
+
             var winner = Fight(player, boss);
 
             var cost = loadout.Sum(x => x.Cost);
-            
+
             Console.WriteLine($"cost: {cost}, {winner.Name} wins!");
-            
+
             if (winner.Name == "Boss")
+            {
                 return cost;
+            }
         }
 
         return -1;
