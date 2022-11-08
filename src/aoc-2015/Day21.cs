@@ -1,37 +1,37 @@
 namespace aoc_2015;
 
-internal class Player
-{
-    public string Name { get; set; }
-    public int HitPoints { get; set; }
-    public int Damage { get; set; }
-    public int Armor { get; set; }
-
-    public Player(string name, int hitPoints, int damage, int armor)
-    {
-        Name = name;
-        HitPoints = hitPoints;
-        Damage = damage;
-        Armor = armor;
-    }
-
-    public override string ToString()
-    {
-        return $"Name = {Name}, HitPoints = {HitPoints}, Damage = {Damage}, Armor = {Armor}";
-    }
-}
-
-internal record Item(string Name, int Cost, int Damage, int Armor) : IComparable
-{
-    public int CompareTo(object? obj)
-    {
-        var other = obj as Item;
-        return Cost - other!.Cost;
-    }
-}
-
 public static class Day21
 {
+    private record Item(string Name, int Cost, int Damage, int Armor) : IComparable
+    {
+        public int CompareTo(object? obj)
+        {
+            var other = obj as Item;
+            return Cost - other!.Cost;
+        }
+    }
+
+    private class Player
+    {
+        public string Name { get; set; }
+        public int HitPoints { get; set; }
+        public int Damage { get; set; }
+        public int Armor { get; set; }
+
+        public Player(string name, int hitPoints, int damage, int armor)
+        {
+            Name = name;
+            HitPoints = hitPoints;
+            Damage = damage;
+            Armor = armor;
+        }
+
+        public override string ToString()
+        {
+            return $"Name = {Name}, HitPoints = {HitPoints}, Damage = {Damage}, Armor = {Armor}";
+        }
+    }
+
     public static int Part1()
     {
         var (weapons, armors, rings) = ParseItems();
