@@ -21,14 +21,7 @@ internal class Player
     }
 }
 
-internal enum ItemType
-{
-    Weapon,
-    Armor,
-    Ring
-}
-
-internal record Item(string Name, ItemType ItemType, int Cost, int Damage, int Armor) : IComparable
+internal record Item(string Name, int Cost, int Damage, int Armor) : IComparable
 {
     public int CompareTo(object? obj)
     {
@@ -56,12 +49,30 @@ public static class Day21
 
             var cost = loadout.Sum(x => x.Cost);
 
-            Console.WriteLine($"cost: {cost}, {winner.Name} wins!");
+            if (winner.Name == "Player") return cost;
+        }
 
-            if (winner.Name == "Player")
-            {
-                return cost;
-            }
+        return -1;
+    }
+
+    public static int Part2()
+    {
+        var (weapons, armors, rings) = ParseShopItems();
+
+        var temp = PermuteEquipment(weapons, armors, rings);
+
+        foreach (var loadout in temp.OrderByDescending(x => x.Sum(y => y.Cost)))
+        {
+            var boss = CreateBoss();
+            var player = CreatePlayer();
+
+            EquipPlayer(player, loadout);
+
+            var winner = Fight(player, boss);
+
+            var cost = loadout.Sum(x => x.Cost);
+
+            if (winner.Name == "Boss") return cost;
         }
 
         return -1;
@@ -86,24 +97,29 @@ public static class Day21
         }
 
         return GetKCombs(list, length - 1)
-            .SelectMany(
-                t => list.Where(o => o.CompareTo(t.Last()) > 0),
-                (t1, t2) => t1.Concat(new[] { t2 }));
+            .SelectMany(t => list.Where(o => o.CompareTo(t.Last()) > 0), (t1, t2) => t1.Concat(new[] { t2 }));
     }
 
     private static List<List<Item>> PermuteEquipment(List<Item> weapons, List<Item> armors, List<Item> rings)
     {
-        var w = GetKCombs(weapons, 1).Select(x => new { Cost = x.Sum(y => y.Cost), Set = x }).OrderBy(x => x.Cost)
+        var w = GetKCombs(weapons, 1)
+            .Select(x => new { Cost = x.Sum(y => y.Cost), Set = x })
+            .OrderBy(x => x.Cost)
             .ToList();
 
         var a1 = GetKCombs(armors, 0);
         var a2 = GetKCombs(armors, 1);
-        var a = a1.Union(a2).Select(x => new { Cost = x.Sum(y => y.Cost), Set = x }).OrderBy(x => x.Cost).ToList();
+        var a = a1.Union(a2)
+            .Select(x => new { Cost = x.Sum(y => y.Cost), Set = x })
+            .OrderBy(x => x.Cost)
+            .ToList();
 
         var r1 = GetKCombs(rings, 0);
         var r2 = GetKCombs(rings, 1);
         var r3 = GetKCombs(rings, 2);
-        var r = r1.Union(r2.Union(r3)).Select(x => new { Cost = x.Sum(y => y.Cost), Set = x }).OrderBy(x => x.Cost)
+        var r = r1.Union(r2.Union(r3))
+            .Select(x => new { Cost = x.Sum(y => y.Cost), Set = x })
+            .OrderBy(x => x.Cost)
             .ToList();
 
         var possibleEquipment = new List<List<Item>>();
@@ -124,7 +140,8 @@ public static class Day21
             }
         }
 
-        var query = possibleEquipment.Select(x => new { Cost = x.Sum(y => y.Cost), Set = x }).OrderBy(x => x.Cost)
+        var query = possibleEquipment.Select(x => new { Cost = x.Sum(y => y.Cost), Set = x })
+            .OrderBy(x => x.Cost)
             .Select(x => x.Set)
             .ToList();
 
@@ -149,58 +166,6 @@ public static class Day21
         return new[] { player, boss }.MaxBy(x => x.HitPoints);
     }
 
-    private static int BuyWeapon(List<Item> weapons, Player player, int gold)
-    {
-        // must buy EXACTLY ONE weapon
-
-        // buy the most expensive weapon we can afford
-        // TODO: this is probably too naive... we probably need to buy a lower priced weapon and save gold for something else
-        var weapon = weapons.Where(x => x.Cost <= gold).MaxBy(x => x.Cost);
-
-        gold -= weapon?.Cost ?? 0;
-
-        player.Damage += weapon?.Damage ?? 0;
-
-        return gold;
-    }
-
-    private static int BuyArmor(List<Item> armors, Player player, int gold)
-    {
-        // must buy ZERO OR ONE armor
-
-        // buy the most expensive weapon we can afford
-        // TODO: this is probably too naive... we probably need to buy a lower priced weapon and save gold for something else
-        var armor = armors.Where(x => x.Cost <= gold).MaxBy(x => x.Cost);
-
-        gold -= armor?.Cost ?? 0;
-
-        player.Armor += armor?.Armor ?? 0;
-
-        return gold;
-    }
-
-    private static void BuyRings(List<Item> rings, Player player, int gold)
-    {
-        // must buy ZERO, ONE, OR TWO rings
-
-        // buy the most expensive weapon we can afford
-        // TODO: this is probably too naive... we probably need to buy a lower priced weapon and save gold for something else
-        var r = rings.Where(x => x.Cost <= gold).OrderByDescending(x => x.Cost).Take(2);
-        var armor = r.Sum(x => x.Armor);
-        var damage = r.Sum(x => x.Damage);
-
-        if (r.Count() > 0)
-        {
-            var foo = "bar";
-        }
-
-        player.Armor += armor;
-        player.Damage += damage;
-
-        // gold -= armor?.Cost ?? 0;
-        // player.Armor += armor?.Armor ?? 0;
-    }
-
     private static (List<Item>, List<Item>, List<Item>) ParseShopItems()
     {
         var shop = File.ReadAllText("../../../../../input/day21_shop.txt");
@@ -210,19 +175,19 @@ public static class Day21
         var weapons = sections[0].Split(Environment.NewLine)
             .Skip(1)
             .Select(x => x.Split(null).Where(x => !string.IsNullOrWhiteSpace(x)).ToArray())
-            .Select(x => new Item(x[0], ItemType.Weapon, int.Parse(x[1]), int.Parse(x[2]), int.Parse(x[3])))
+            .Select(x => new Item(x[0], int.Parse(x[1]), int.Parse(x[2]), int.Parse(x[3])))
             .ToList();
 
         var armor = sections[1].Split(Environment.NewLine)
             .Skip(1)
             .Select(x => x.Split(null).Where(x => !string.IsNullOrWhiteSpace(x)).ToArray())
-            .Select(x => new Item(x[0], ItemType.Armor, int.Parse(x[1]), int.Parse(x[2]), int.Parse(x[3])))
+            .Select(x => new Item(x[0], int.Parse(x[1]), int.Parse(x[2]), int.Parse(x[3])))
             .ToList();
 
         var rings = sections[2].Split(Environment.NewLine)
             .Skip(1)
             .Select(x => x.Split(null).Where(x => !string.IsNullOrWhiteSpace(x)).ToArray())
-            .Select(x => new Item($"{x[0]} {x[1]}", ItemType.Ring, int.Parse(x[2]), int.Parse(x[3]), int.Parse(x[4])))
+            .Select(x => new Item($"{x[0]} {x[1]}", int.Parse(x[2]), int.Parse(x[3]), int.Parse(x[4])))
             .ToList();
 
         return (weapons, armor, rings);
@@ -243,33 +208,5 @@ public static class Day21
     private static Player CreatePlayer()
     {
         return new Player("Player", 100, 0, 0);
-    }
-
-    public static int Part2()
-    {
-        var (weapons, armors, rings) = ParseShopItems();
-
-        var temp = PermuteEquipment(weapons, armors, rings);
-
-        foreach (var loadout in temp.OrderByDescending(x => x.Sum(y => y.Cost)))
-        {
-            var boss = CreateBoss();
-            var player = CreatePlayer();
-
-            EquipPlayer(player, loadout);
-
-            var winner = Fight(player, boss);
-
-            var cost = loadout.Sum(x => x.Cost);
-
-            Console.WriteLine($"cost: {cost}, {winner.Name} wins!");
-
-            if (winner.Name == "Boss")
-            {
-                return cost;
-            }
-        }
-
-        return -1;
     }
 }
