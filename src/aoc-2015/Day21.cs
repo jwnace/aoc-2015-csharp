@@ -34,11 +34,10 @@ public static class Day21
 {
     public static int Part1()
     {
-        var (weapons, armors, rings) = ParseShopItems();
+        var (weapons, armors, rings) = ParseItems();
+        var loadouts = GetPossibleLoadouts(weapons, armors, rings);
 
-        var temp = PermuteEquipment(weapons, armors, rings);
-
-        foreach (var loadout in temp)
+        foreach (var loadout in loadouts)
         {
             var boss = CreateBoss();
             var player = CreatePlayer();
@@ -46,10 +45,12 @@ public static class Day21
             EquipPlayer(player, loadout);
 
             var winner = Fight(player, boss);
-
             var cost = loadout.Sum(x => x.Cost);
 
-            if (winner.Name == "Player") return cost;
+            if (winner.Name == "Player")
+            {
+                return cost;
+            }
         }
 
         return -1;
@@ -57,11 +58,11 @@ public static class Day21
 
     public static int Part2()
     {
-        var (weapons, armors, rings) = ParseShopItems();
+        var (weapons, armors, rings) = ParseItems();
+        var loadouts = GetPossibleLoadouts(weapons, armors, rings)
+            .OrderByDescending(x => x.Sum(y => y.Cost));
 
-        var temp = PermuteEquipment(weapons, armors, rings);
-
-        foreach (var loadout in temp.OrderByDescending(x => x.Sum(y => y.Cost)))
+        foreach (var loadout in loadouts)
         {
             var boss = CreateBoss();
             var player = CreatePlayer();
@@ -69,10 +70,12 @@ public static class Day21
             EquipPlayer(player, loadout);
 
             var winner = Fight(player, boss);
-
             var cost = loadout.Sum(x => x.Cost);
 
-            if (winner.Name == "Boss") return cost;
+            if (winner.Name == "Boss")
+            {
+                return cost;
+            }
         }
 
         return -1;
@@ -84,7 +87,7 @@ public static class Day21
         player.Damage += loadout.Sum(x => x.Damage);
     }
 
-    private static IEnumerable<IEnumerable<T>> GetKCombs<T>(IEnumerable<T> list, int length) where T : IComparable
+    private static IEnumerable<IEnumerable<T>> GetCombinations<T>(IEnumerable<T> list, int length) where T : IComparable
     {
         if (length == 0)
         {
@@ -96,27 +99,27 @@ public static class Day21
             return list.Select(t => new[] { t });
         }
 
-        return GetKCombs(list, length - 1)
+        return GetCombinations(list, length - 1)
             .SelectMany(t => list.Where(o => o.CompareTo(t.Last()) > 0), (t1, t2) => t1.Concat(new[] { t2 }));
     }
 
-    private static List<List<Item>> PermuteEquipment(List<Item> weapons, List<Item> armors, List<Item> rings)
+    private static List<List<Item>> GetPossibleLoadouts(List<Item> weapons, List<Item> armors, List<Item> rings)
     {
-        var w = GetKCombs(weapons, 1)
+        var w = GetCombinations(weapons, 1)
             .Select(x => new { Cost = x.Sum(y => y.Cost), Set = x })
             .OrderBy(x => x.Cost)
             .ToList();
 
-        var a1 = GetKCombs(armors, 0);
-        var a2 = GetKCombs(armors, 1);
+        var a1 = GetCombinations(armors, 0);
+        var a2 = GetCombinations(armors, 1);
         var a = a1.Union(a2)
             .Select(x => new { Cost = x.Sum(y => y.Cost), Set = x })
             .OrderBy(x => x.Cost)
             .ToList();
 
-        var r1 = GetKCombs(rings, 0);
-        var r2 = GetKCombs(rings, 1);
-        var r3 = GetKCombs(rings, 2);
+        var r1 = GetCombinations(rings, 0);
+        var r2 = GetCombinations(rings, 1);
+        var r3 = GetCombinations(rings, 2);
         var r = r1.Union(r2.Union(r3))
             .Select(x => new { Cost = x.Sum(y => y.Cost), Set = x })
             .OrderBy(x => x.Cost)
@@ -163,10 +166,10 @@ public static class Day21
             (attacker, defender) = (defender, attacker);
         }
 
-        return new[] { player, boss }.MaxBy(x => x.HitPoints);
+        return new[] { player, boss }.MaxBy(x => x.HitPoints)!;
     }
 
-    private static (List<Item>, List<Item>, List<Item>) ParseShopItems()
+    private static (List<Item>, List<Item>, List<Item>) ParseItems()
     {
         var shop = File.ReadAllText("../../../../../input/day21_shop.txt");
 
