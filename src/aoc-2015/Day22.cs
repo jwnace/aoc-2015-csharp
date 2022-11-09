@@ -1,12 +1,12 @@
-using System.Security.Cryptography;
-
 namespace aoc_2015;
 
 public static class Day22
 {
+    private record GameState(Player Player, Player Boss, List<Effect> Effects, List<GameState> Children);
+
     private record Spell(string Name, int Cost);
 
-    private class Effect
+    private record Effect
     {
         public string Name { get; set; }
         public int Duration { get; set; }
@@ -14,12 +14,21 @@ public static class Day22
 
     private class Player
     {
-        public string Name { get; set; }
+        public string Name { get; }
         public int HitPoints { get; set; }
-        public int Damage { get; set; }
+        public int Damage { get; }
         public int Armor { get; set; }
         public int Mana { get; set; }
 
+        public Player(Player p)
+        {
+            Name = p.Name;
+            HitPoints = p.HitPoints;
+            Damage = p.Damage;
+            Armor = p.Armor;
+            Mana = p.Mana;
+        }
+        
         public Player(string name, int hitPoints, int damage, int armor, int mana)
         {
             Name = name;
@@ -35,8 +44,12 @@ public static class Day22
         }
     }
 
+    private static GameState Root { get; set; }
+
     public static int Part1()
     {
+        // var boss = CreateBoss();
+
         var player = new Player("Player", 10, 0, 0, 250);
         var boss = new Player("Boss", 13, 8, 0, 0);
 
@@ -65,13 +78,17 @@ public static class Day22
 
         var spells = new List<Spell>
         {
-            new Spell("Magic Missile", 53),
-            new Spell("Drain", 73),
-            new Spell("Shield", 113),
-            new Spell("Poison", 173),
-            new Spell("Recharge", 229)
+            new("Magic Missile", 53),
+            new("Drain", 73),
+            new("Shield", 113),
+            new("Poison", 173),
+            new("Recharge", 229)
         };
 
+        // create the initial GameState
+        Root = new GameState(new Player(player), new Player(boss), new List<Effect>(effects), new List<GameState>());
+        var currentState = Root;
+        
         while (player.HitPoints > 0 && boss.HitPoints > 0)
         {
             Console.WriteLine($"Player has {player.HitPoints} hit points, {player.Armor} armor, {player.Mana} mana");
@@ -117,7 +134,17 @@ public static class Day22
             if (attacker.Name == "Player")
             {
                 var castableSpells = spells.Where(x => x.Cost <= player.Mana).ToList();
-                
+
+                // TODO: choose a spell to cast
+                foreach (var spell in castableSpells)
+                {
+                    // TODO: split into multiple possible realities
+                    // build a tree... root node is the initial state
+                    // child nodes are all possible next states
+                    // keep building out the tree until you reach a winner and a loser
+                    // find the leaf where the player wins with the least mana used
+                }
+
                 // magic missile
                 attacker.Mana -= 53;
                 defender.HitPoints -= 4;
@@ -148,6 +175,8 @@ public static class Day22
             }
 
             (attacker, defender) = (defender, attacker);
+            
+            currentState.Children.Add(new GameState(player, boss, effects, new List<GameState>()));
         }
 
         return new[] { player, boss }.MaxBy(x => x.HitPoints)!;
@@ -160,8 +189,7 @@ public static class Day22
 
         var hitPoints = input[0];
         var damage = input[1];
-        var armor = input[2];
 
-        return new Player("Boss", hitPoints, damage, armor, 0);
+        return new Player("Boss", hitPoints, damage, 0, 0);
     }
 }
