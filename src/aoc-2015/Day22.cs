@@ -36,7 +36,7 @@ public static class Day22
     {
         var gameState = GetInitialGameState();
 
-        TakeTurn(gameState);
+        TakeTurn(gameState, false);
 
         var playerWins = PossibleGameStates.Count(x => x.Winner.Name == "Player");
         var bossWins = PossibleGameStates.Count(x => x.Winner.Name == "Boss");
@@ -50,7 +50,7 @@ public static class Day22
             : -1;
     }
 
-    private static void TakeTurn(GameState gameState)
+    private static void TakeTurn(GameState gameState, bool partTwo)
     {
         var (player, boss, shieldDuration, poisonDuration, rechargeDuration, isPlayersTurn, manaCost, winner, spells) =
             gameState;
@@ -58,6 +58,27 @@ public static class Day22
         if (PossibleGameStates.Count > 0 && manaCost > PossibleGameStates.Min(x => x.ManaCost))
         {
             return;
+        }
+
+        if (partTwo && isPlayersTurn)
+        {
+            player = player with { HitPoints = player.HitPoints - 1 };
+            
+            // TODO: figure out when is the appropriate time to do these checks
+            if (player.HitPoints <= 0 || player.Mana < Spells.Min(x => x.Cost))
+            {
+                winner = boss;
+
+                // PossibleGameStates.Add(
+                //     new GameState(
+                //         player, boss, shieldDuration, poisonDuration, rechargeDuration, !isPlayersTurn, manaCost, winner, spells));
+
+                // Console.WriteLine(player);
+                // Console.WriteLine(boss);
+                // Console.WriteLine("boss wins!");
+                // Console.WriteLine();
+                return;
+            }
         }
         
         spells = new List<string>(spells);
@@ -152,7 +173,7 @@ public static class Day22
                             shieldDuration, poisonDuration, rechargeDuration, !isPlayersTurn,
                             manaCost + spell.Cost,
                             winner,
-                            spells.Concat(new List<string> { spell.Name }).ToList()));
+                            spells.Concat(new List<string> { spell.Name }).ToList()), partTwo);
                 }
 
                 if (spell.Name == "Drain")
@@ -182,7 +203,7 @@ public static class Day22
                             boss with { HitPoints = boss.HitPoints - 2 },
                             shieldDuration, poisonDuration, rechargeDuration,
                             !isPlayersTurn,
-                            manaCost + spell.Cost, winner, spells.Concat(new List<string> { spell.Name }).ToList()));
+                            manaCost + spell.Cost, winner, spells.Concat(new List<string> { spell.Name }).ToList()), partTwo);
                 }
 
                 if (spell.Name == "Shield")
@@ -215,7 +236,7 @@ public static class Day22
                                 boss,
                                 6,
                                 poisonDuration, rechargeDuration, !isPlayersTurn, manaCost + spell.Cost,
-                                winner, spells.Concat(new List<string> { spell.Name }).ToList()));
+                                winner, spells.Concat(new List<string> { spell.Name }).ToList()), partTwo);
                     }
                 }
 
@@ -245,7 +266,7 @@ public static class Day22
                             new GameState(
                                 player with { Mana = player.Mana - spell.Cost }, boss, shieldDuration, 6, rechargeDuration,
                                 !isPlayersTurn, manaCost + spell.Cost,
-                                winner, spells.Concat(new List<string> { spell.Name }).ToList()));
+                                winner, spells.Concat(new List<string> { spell.Name }).ToList()), partTwo);
                     }
                 }
 
@@ -275,7 +296,7 @@ public static class Day22
                             new GameState(
                                 player with { Mana = player.Mana - spell.Cost }, boss, shieldDuration, poisonDuration, 5,
                                 !isPlayersTurn, manaCost + spell.Cost,
-                                winner, spells.Concat(new List<string> { spell.Name }).ToList()));
+                                winner, spells.Concat(new List<string> { spell.Name }).ToList()), partTwo);
                     }
                 }
             }
@@ -304,13 +325,29 @@ public static class Day22
 
             TakeTurn(
                 new GameState(
-                    player, boss, shieldDuration, poisonDuration, rechargeDuration, !isPlayersTurn, manaCost, winner, spells));
+                    player, boss, shieldDuration, poisonDuration, rechargeDuration, !isPlayersTurn, manaCost, winner, spells), partTwo);
         }
     }
 
     public static int Part2()
     {
-        return -2;
+        // HACK: do this a better way... this is bad
+        PossibleGameStates.Clear();
+        
+        var gameState = GetInitialGameState();
+
+        TakeTurn(gameState, true);
+
+        var playerWins = PossibleGameStates.Count(x => x.Winner.Name == "Player");
+        var bossWins = PossibleGameStates.Count(x => x.Winner.Name == "Boss");
+
+        Console.WriteLine($"Player Wins: {playerWins}, Boss Wins: {bossWins}");
+
+        return playerWins > 0
+            ? PossibleGameStates
+                .Where(x => x.Winner.Name == "Player")
+                .Min(x => x.ManaCost)
+            : -1;
     }
     
     private static Player CreateBoss()
