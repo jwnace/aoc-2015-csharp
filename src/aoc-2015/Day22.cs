@@ -6,23 +6,30 @@ public static class Day22
 
     private record Spell(string Name, int Cost);
 
-    private static readonly List<Spell> Spells = new List<Spell>
+    private static readonly List<Spell> Spells = new()
     {
-        new("Magic Missile", 53),
-        new("Drain", 73),
-        new("Shield", 113),
-        new("Poison", 173),
-        new("Recharge", 229)
+        new Spell("Magic Missile", 53),
+        new Spell("Drain", 73),
+        new Spell("Shield", 113),
+        new Spell("Poison", 173),
+        new Spell("Recharge", 229)
     };
 
-    private record GameState(Player Player, Player Boss, int ShieldDuration, int PoisonDuration, int RechargeDuration, bool IsPlayersTurn);
+    private record GameState(Player Player, Player Boss, int ShieldDuration, int PoisonDuration, int RechargeDuration,
+        bool IsPlayersTurn, int ManaCost, Player? Winner, List<string> Spells);
+
+    private static readonly List<GameState> PossibleGameStates = new();
 
     private static GameState GetInitialGameState()
     {
-        var player = new Player("Player", 10, 0, 0, 250);
-        var boss = new Player("Boss", 13, 8, 0, 0);
+        // var player = new Player("Player", 10, 0, 0, 250);
+        // var boss = new Player("Boss", 13, 8, 0, 0);
+        // var boss = new Player("Boss", 14, 8, 0, 0);
 
-        return new GameState(player, boss, 0, 0, 0, true);
+        var player = new Player("Player", 50, 0, 0, 500);
+        var boss = CreateBoss();
+        
+        return new GameState(player, boss, 0, 0, 0, true, 0, null, new List<string>());
     }
 
     public static int Part1()
@@ -31,28 +38,81 @@ public static class Day22
 
         TakeTurn(gameState);
 
-        return -1;
+        var playerWins = PossibleGameStates.Count(x => x.Winner.Name == "Player");
+        var bossWins = PossibleGameStates.Count(x => x.Winner.Name == "Boss");
+
+        Console.WriteLine($"Player Wins: {playerWins}, Boss Wins: {bossWins}");
+
+        return playerWins > 0
+            ? PossibleGameStates
+                .Where(x => x.Winner.Name == "Player")
+                .Min(x => x.ManaCost)
+            : -1;
     }
 
     private static void TakeTurn(GameState gameState)
     {
-        var (player, boss, shieldDuration, poisonDuration, rechargeDuration, isPlayersTurn) = gameState;
+        var (player, boss, shieldDuration, poisonDuration, rechargeDuration, isPlayersTurn, manaCost, winner, spells) =
+            gameState;
 
-        if (player.HitPoints <= 0 || player.Mana < Spells.Min(x => x.Cost))
+        if (PossibleGameStates.Count > 0 && manaCost > PossibleGameStates.Min(x => x.ManaCost))
         {
-            // the boss wins
-            Console.WriteLine("boss wins!");
-            Console.WriteLine();
-            Console.WriteLine(gameState);
-            Console.WriteLine();
+            return;
+        }
+        
+        spells = new List<string>(spells);
 
+        if (shieldDuration > 0)
+        {
+            player = player with { Armor = 7 };
+            shieldDuration--;
+        }
+        else
+        {
+            player = player with { Armor = 0 };
+        }
+
+        if (poisonDuration > 0)
+        {
+            boss = boss with { HitPoints = boss.HitPoints - 3 };
+            poisonDuration--;
+        }
+
+        if (rechargeDuration > 0)
+        {
+            player = player with { Mana = player.Mana + 101 };
+            rechargeDuration--;
+        }
+
+        // TODO: figure out when is the appropriate time to do these checks
+        if (boss.HitPoints <= 0)
+        {
+            winner = player;
+
+            PossibleGameStates.Add(
+                new GameState(
+                    player, boss, shieldDuration, poisonDuration, rechargeDuration, !isPlayersTurn, manaCost, winner, spells));
+
+            // Console.WriteLine(player);
+            // Console.WriteLine(boss);
+            // Console.WriteLine("player wins!");
+            // Console.WriteLine();
             return;
         }
 
-        if (boss.HitPoints <= 0)
+        // TODO: figure out when is the appropriate time to do these checks
+        if (player.HitPoints <= 0 || player.Mana < Spells.Min(x => x.Cost))
         {
-            // the player wins
-            Console.WriteLine("player wins!");
+            winner = boss;
+
+            // PossibleGameStates.Add(
+            //     new GameState(
+            //         player, boss, shieldDuration, poisonDuration, rechargeDuration, !isPlayersTurn, manaCost, winner, spells));
+
+            // Console.WriteLine(player);
+            // Console.WriteLine(boss);
+            // Console.WriteLine("boss wins!");
+            // Console.WriteLine();
             return;
         }
 
@@ -61,21 +121,206 @@ public static class Day22
 
         if (attacker == player)
         {
-            var updatedState = new GameState(player, boss, shieldDuration, poisonDuration, rechargeDuration, !isPlayersTurn);
-            TakeTurn(updatedState);
+            foreach (var spell in Spells)
+            {
+                if (spell.Name == "Magic Missile")
+                {
+                    if (boss.HitPoints <= 0)
+                    {
+                        winner = player;
+
+                        PossibleGameStates.Add(
+                            new GameState(
+                                player with { Mana = player.Mana - spell.Cost },
+                                boss with { HitPoints = boss.HitPoints - 4 },
+                                shieldDuration, poisonDuration, rechargeDuration, !isPlayersTurn,
+                                manaCost + spell.Cost,
+                                winner,
+                                spells.Concat(new List<string> { spell.Name }).ToList()));
+
+                        // Console.WriteLine(player);
+                        // Console.WriteLine(boss);
+                        // Console.WriteLine("player wins!");
+                        // Console.WriteLine();
+                        return;
+                    }
+
+                    TakeTurn(
+                        new GameState(
+                            player with { Mana = player.Mana - spell.Cost },
+                            boss with { HitPoints = boss.HitPoints - 4 },
+                            shieldDuration, poisonDuration, rechargeDuration, !isPlayersTurn,
+                            manaCost + spell.Cost,
+                            winner,
+                            spells.Concat(new List<string> { spell.Name }).ToList()));
+                }
+
+                if (spell.Name == "Drain")
+                {
+                    if (boss.HitPoints <= 0)
+                    {
+                        winner = player;
+
+                        PossibleGameStates.Add(
+                            new GameState(
+                                player with { Mana = player.Mana - spell.Cost, HitPoints = player.HitPoints + 2 },
+                                boss with { HitPoints = boss.HitPoints - 2 },
+                                shieldDuration, poisonDuration, rechargeDuration,
+                                !isPlayersTurn,
+                                manaCost + spell.Cost, winner, spells.Concat(new List<string> { spell.Name }).ToList()));
+
+                        // Console.WriteLine(player);
+                        // Console.WriteLine(boss);
+                        // Console.WriteLine("player wins!");
+                        // Console.WriteLine();
+                        return;
+                    }
+
+                    TakeTurn(
+                        new GameState(
+                            player with { Mana = player.Mana - spell.Cost, HitPoints = player.HitPoints + 2 },
+                            boss with { HitPoints = boss.HitPoints - 2 },
+                            shieldDuration, poisonDuration, rechargeDuration,
+                            !isPlayersTurn,
+                            manaCost + spell.Cost, winner, spells.Concat(new List<string> { spell.Name }).ToList()));
+                }
+
+                if (spell.Name == "Shield")
+                {
+                    // only cast it if it's not already active
+                    if (shieldDuration <= 0)
+                    {
+                        if (boss.HitPoints <= 0)
+                        {
+                            winner = player;
+
+                            PossibleGameStates.Add(
+                                new GameState(
+                                    player with { Mana = player.Mana - spell.Cost },
+                                    boss,
+                                    6,
+                                    poisonDuration, rechargeDuration, !isPlayersTurn, manaCost + spell.Cost,
+                                    winner, spells.Concat(new List<string> { spell.Name }).ToList()));
+
+                            // Console.WriteLine(player);
+                            // Console.WriteLine(boss);
+                            // Console.WriteLine("player wins!");
+                            // Console.WriteLine();
+                            return;
+                        }
+
+                        TakeTurn(
+                            new GameState(
+                                player with { Mana = player.Mana - spell.Cost },
+                                boss,
+                                6,
+                                poisonDuration, rechargeDuration, !isPlayersTurn, manaCost + spell.Cost,
+                                winner, spells.Concat(new List<string> { spell.Name }).ToList()));
+                    }
+                }
+
+                if (spell.Name == "Poison")
+                {
+                    // only cast it if it's not already active
+                    if (poisonDuration <= 0)
+                    {
+                        if (boss.HitPoints <= 0)
+                        {
+                            winner = player;
+
+                            PossibleGameStates.Add(
+                                new GameState(
+                                    player with { Mana = player.Mana - spell.Cost }, boss, shieldDuration, 6, rechargeDuration,
+                                    !isPlayersTurn, manaCost + spell.Cost,
+                                    winner, spells.Concat(new List<string> { spell.Name }).ToList()));
+
+                            // Console.WriteLine(player);
+                            // Console.WriteLine(boss);
+                            // Console.WriteLine("player wins!");
+                            // Console.WriteLine();
+                            return;
+                        }
+
+                        TakeTurn(
+                            new GameState(
+                                player with { Mana = player.Mana - spell.Cost }, boss, shieldDuration, 6, rechargeDuration,
+                                !isPlayersTurn, manaCost + spell.Cost,
+                                winner, spells.Concat(new List<string> { spell.Name }).ToList()));
+                    }
+                }
+
+                if (spell.Name == "Recharge")
+                {
+                    // only cast it if it's not already active
+                    if (rechargeDuration <= 0)
+                    {
+                        if (boss.HitPoints <= 0)
+                        {
+                            winner = player;
+
+                            PossibleGameStates.Add(
+                                new GameState(
+                                    player with { Mana = player.Mana - spell.Cost }, boss, shieldDuration, poisonDuration, 5,
+                                    !isPlayersTurn, manaCost + spell.Cost,
+                                    winner, spells.Concat(new List<string> { spell.Name }).ToList()));
+
+                            // Console.WriteLine(player);
+                            // Console.WriteLine(boss);
+                            // Console.WriteLine("player wins!");
+                            // Console.WriteLine();
+                            return;
+                        }
+
+                        TakeTurn(
+                            new GameState(
+                                player with { Mana = player.Mana - spell.Cost }, boss, shieldDuration, poisonDuration, 5,
+                                !isPlayersTurn, manaCost + spell.Cost,
+                                winner, spells.Concat(new List<string> { spell.Name }).ToList()));
+                    }
+                }
+            }
         }
 
         if (attacker == boss)
         {
             var damage = attacker.Damage - defender.Armor;
-            var updatedPlayer = player with { HitPoints = player.HitPoints - damage };
-            var updatedState = new GameState(updatedPlayer, boss, shieldDuration, poisonDuration, rechargeDuration, !isPlayersTurn);
-            TakeTurn(updatedState);
+            player = player with { HitPoints = player.HitPoints - damage };
+
+            if (player.HitPoints <= 0)
+            {
+                winner = boss;
+
+                // PossibleGameStates.Add(
+                //     new GameState(
+                //         player, boss, shieldDuration, poisonDuration, rechargeDuration, !isPlayersTurn, manaCost, winner,
+                //         spells));
+
+                // Console.WriteLine(player);
+                // Console.WriteLine(boss);
+                // Console.WriteLine("boss wins!");
+                // Console.WriteLine();
+                return;
+            }
+
+            TakeTurn(
+                new GameState(
+                    player, boss, shieldDuration, poisonDuration, rechargeDuration, !isPlayersTurn, manaCost, winner, spells));
         }
     }
 
     public static int Part2()
     {
         return -2;
+    }
+    
+    private static Player CreateBoss()
+    {
+        var input = File.ReadAllLines("../../../../../input/day22.txt")
+            .Select(line => int.Parse(line.Split(": ")[1])).ToArray();
+
+        var hitPoints = input[0];
+        var damage = input[1];
+
+        return new Player("Boss", hitPoints, damage, 0, 0);
     }
 }
