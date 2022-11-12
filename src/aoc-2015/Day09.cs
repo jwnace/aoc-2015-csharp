@@ -1,6 +1,4 @@
-﻿using System.Linq;
-
-namespace aoc_2015;
+﻿namespace aoc_2015;
 
 public class Day09
 {
@@ -25,18 +23,18 @@ public class Day09
         var paths = GetPermutations(locations.ToArray()).ToList();
 
         var minDistance = int.MaxValue;
-        
+
         foreach (var path in paths)
         {
             var distance = 0;
-            
+
             for (int i = 0; i < path.Length - 1; i++)
             {
                 var d = distances
                     .Where(x => x.Key.Contains(path[i].Key) && x.Key.Contains(path[i + 1].Key))
                     .Select(x => x.Value)
                     .Single();
-                
+
                 distance += d;
             }
 
@@ -45,22 +43,22 @@ public class Day09
                 minDistance = distance;
             }
         }
-        
+
         return minDistance;
     }
-    
+
     private static IEnumerable<T[]> GetPermutations<T>(T[] values)
     {
         if (values.Length == 1)
-            return new[] {values};
+            return new[] { values };
 
-        return values.SelectMany(v => GetPermutations(values.Except(new[] {v}).ToArray()),
-            (v, p) => new[] {v}.Concat(p).ToArray());
+        return values.SelectMany(v => GetPermutations(values.Except(new[] { v }).ToArray()),
+            (v, p) => new[] { v }.Concat(p).ToArray());
     }
-    
 
     public static int Part2()
-    {var input = File.ReadAllLines("../../../../../input/day09.txt");
+    {
+        var input = File.ReadAllLines("../../../../../input/day09.txt");
         var distances = new Dictionary<string[], int>();
         var locations = new Dictionary<string, bool>();
 
@@ -79,18 +77,18 @@ public class Day09
         var paths = GetPermutations(locations.ToArray()).ToList();
 
         var maxDistance = 0;
-        
+
         foreach (var path in paths)
         {
             var distance = 0;
-            
+
             for (int i = 0; i < path.Length - 1; i++)
             {
                 var d = distances
                     .Where(x => x.Key.Contains(path[i].Key) && x.Key.Contains(path[i + 1].Key))
                     .Select(x => x.Value)
                     .Single();
-                
+
                 distance += d;
             }
 
@@ -99,7 +97,7 @@ public class Day09
                 maxDistance = distance;
             }
         }
-        
+
         return maxDistance;
     }
 }

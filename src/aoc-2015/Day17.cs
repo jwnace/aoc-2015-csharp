@@ -1,6 +1,4 @@
-﻿using System.Diagnostics;
-
-namespace aoc_2015;
+﻿namespace aoc_2015;
 
 public static class Day17
 {
