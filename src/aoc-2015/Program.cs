@@ -70,11 +70,11 @@ using aoc_2015;
 // Console.WriteLine($"Day 22 Part 1: {Day22.Part1()}");
 // Console.WriteLine($"Day 22 Part 2: {Day22.Part2()}");
 
-Console.WriteLine($"Day 23 Part 1: {Day23.Part1()}");
-Console.WriteLine($"Day 23 Part 2: {Day23.Part2()}");
+// Console.WriteLine($"Day 23 Part 1: {Day23.Part1()}");
+// Console.WriteLine($"Day 23 Part 2: {Day23.Part2()}");
 
-// Console.WriteLine($"Day 24 Part 1: {Day24.Part1()}");
-// Console.WriteLine($"Day 24 Part 2: {Day24.Part2()}");
+Console.WriteLine($"Day 24 Part 1: {Day24.Part1()}");
+Console.WriteLine($"Day 24 Part 2: {Day24.Part2()}");
 
 // Console.WriteLine($"Day 25 Part 1: {Day25.Part1()}");
 // Console.WriteLine($"Day 25 Part 2: {Day25.Part2()}");
