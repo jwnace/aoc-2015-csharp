@@ -3,16 +3,16 @@ namespace aoc_2015;
 public static class ChunkExtensions
 {
     public static IEnumerable<IGrouping<TKey, TSource>> ChunkBy<TSource, TKey>(
-            this IEnumerable<TSource> source,
-            Func<TSource, TKey> keySelector
-        ) =>
-            source.ChunkBy(keySelector, EqualityComparer<TKey>.Default);
+        this IEnumerable<TSource> source,
+        Func<TSource, TKey> keySelector
+    ) =>
+        source.ChunkBy(keySelector, EqualityComparer<TKey>.Default);
 
     public static IEnumerable<IGrouping<TKey, TSource>> ChunkBy<TSource, TKey>(
-            this IEnumerable<TSource> source,
-            Func<TSource, TKey> keySelector,
-            IEqualityComparer<TKey> comparer
-        )
+        this IEnumerable<TSource> source,
+        Func<TSource, TKey> keySelector,
+        IEqualityComparer<TKey> comparer
+    )
     {
         // Flag to signal end of source sequence.
         const bool noMoreSourceElements = true;
@@ -57,7 +57,6 @@ public static class ChunkExtensions
                 yield break;
             }
         }
-
     }
 }
 
@@ -76,6 +75,7 @@ class Chunk<TKey, TSource> : IGrouping<TKey, TSource>
         {
             Value = value;
         }
+
         public readonly TSource Value;
         public ChunkItem? Next = null;
     }
@@ -203,22 +203,4 @@ class Chunk<TKey, TSource> : IGrouping<TKey, TSource>
     }
 
     System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => GetEnumerator();
-}
-
-
-public static class CombinationExtensions
-{
-    public static IEnumerable<IEnumerable<T>> GetKCombs<T>(this IEnumerable<T> list, int length) where T : IComparable
-    {
-        if (length == 1)
-        {
-            return list.Select(t => new T[] { t });
-        }
-
-        return GetKCombs(list, length - 1)
-            .SelectMany(
-                t => list.Where(o => o.CompareTo(t.Last()) > 0),
-                (t1, t2) => t1.Concat(new T[] { t2 })
-            );
-    }
 }
