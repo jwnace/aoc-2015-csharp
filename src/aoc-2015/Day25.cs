@@ -1,22 +1,39 @@
-using System.Diagnostics;
-
 namespace aoc_2015;
 
 public static class Day25
 {
-    private static readonly ulong Row = 2981;
-    private static readonly ulong Col = 3075;
-    private static readonly ulong StartingCode = 20151125;
+    private const ulong Row = 2981;
+    private const ulong Col = 3075;
+    private const ulong StartingCode = 20151125;
 
-    public static string Part1()
+    public static ulong Part1()
     {
-        var code = GetCode(Row, Col);
-        return code.ToString();
+        return GetCode(Row, Col);
     }
 
     public static string Part2()
     {
-        return "";
+        return "Merry Christmas!";
+    }
+
+    private static ulong GetIndex(ulong row, ulong col)
+    {
+        if (col == 1)
+        {
+            return GetColumnOneIndex(row);
+        }
+
+        return GetIndex(row, col - 1) + (row + col - 1);
+    }
+
+    private static ulong GetColumnOneIndex(ulong row)
+    {
+        if (row == 1)
+        {
+            return 1;
+        }
+
+        return GetColumnOneIndex(row - 1) + (row - 1);
     }
 
     private static ulong GetCode(ulong row, ulong col)
@@ -24,7 +41,7 @@ public static class Day25
         var index = GetIndex(row, col);
         return GetCode(index);
     }
-    
+
     private static ulong GetCode(ulong index)
     {
         var code = StartingCode;
@@ -35,25 +52,5 @@ public static class Day25
         }
 
         return code;
-    }
-
-    private static ulong GetColumnOneValue(ulong row)
-    {
-        if (row == 1)
-        {
-            return 1;
-        }
-
-        return GetColumnOneValue(row - 1) + (row - 1);
-    }
-
-    private static ulong GetIndex(ulong row, ulong col)
-    {
-        if (col == 1)
-        {
-            return GetColumnOneValue(row);
-        }
-
-        return GetIndex(row, col - 1) + (row + col - 1);
     }
 }
