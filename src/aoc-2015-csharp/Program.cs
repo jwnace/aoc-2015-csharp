@@ -1,6 +1,6 @@
 ﻿#region
 
-using aoc_2015_csharp;
+using aoc_2015_csharp.Day25;
 
 #endregion
 

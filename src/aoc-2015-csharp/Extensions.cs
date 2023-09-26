@@ -30,7 +30,7 @@ public static class ChunkExtensions
         // On each pass, the iterator advances to the first element of the next "Chunk"
         // in the source sequence. This loop corresponds to the outer foreach loop that
         // executes the query.
-        Chunk<TKey, TSource> current = null;
+        Chunk<TKey, TSource> current;
         while (true)
         {
             // Get the key for the current Chunk. The source iterator will churn through
@@ -77,7 +77,7 @@ class Chunk<TKey, TSource> : IGrouping<TKey, TSource>
         }
 
         public readonly TSource Value;
-        public ChunkItem? Next = null;
+        public ChunkItem? Next;
     }
 
     // Stores a reference to the enumerator for the source sequence
@@ -95,7 +95,7 @@ class Chunk<TKey, TSource> : IGrouping<TKey, TSource>
     private ChunkItem tail;
 
     // Flag to indicate the source iterator has reached the end of the source sequence.
-    internal bool isLastSourceElement = false;
+    internal bool isLastSourceElement;
 
     // Private object for thread syncronization
     private readonly object m_Lock;

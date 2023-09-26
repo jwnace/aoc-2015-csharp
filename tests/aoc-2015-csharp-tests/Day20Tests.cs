@@ -1,4 +1,4 @@
-﻿using aoc_2015_csharp;
+﻿using aoc_2015_csharp.Day20;
 
 namespace aoc_2015_csharp_tests;
 
