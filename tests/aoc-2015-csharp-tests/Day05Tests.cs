@@ -1,0 +1,18 @@
+using aoc_2015_csharp.Day05;
+
+namespace aoc_2015_csharp_tests;
+
+public class Day05Tests
+{
+    [Fact]
+    public void Part1()
+    {
+        Assert.Equal(255, Day05.Part1());
+    }
+
+    [Fact]
+    public void Part2()
+    {
+        Assert.Equal(55, Day05.Part2());
+    }
+}
