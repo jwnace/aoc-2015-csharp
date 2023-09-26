@@ -41,7 +41,7 @@ public static class Day22
         var playerWins = PossibleGameStates.Count(x => x.Winner!.Name == "Player");
         var bossWins = PossibleGameStates.Count(x => x.Winner!.Name == "Boss");
 
-        Console.WriteLine($"Player Wins: {playerWins}, Boss Wins: {bossWins}");
+        // Console.WriteLine($"Player Wins: {playerWins}, Boss Wins: {bossWins}");
 
         return playerWins > 0
             ? PossibleGameStates
@@ -335,7 +335,7 @@ public static class Day22
         var playerWins = PossibleGameStates.Count(x => x.Winner!.Name == "Player");
         var bossWins = PossibleGameStates.Count(x => x.Winner!.Name == "Boss");
 
-        Console.WriteLine($"Player Wins: {playerWins}, Boss Wins: {bossWins}");
+        // Console.WriteLine($"Player Wins: {playerWins}, Boss Wins: {bossWins}");
 
         return playerWins > 0
             ? PossibleGameStates

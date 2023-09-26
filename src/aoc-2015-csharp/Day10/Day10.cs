@@ -18,7 +18,7 @@ public static class Day10
         }
 
         t.Stop();
-        Console.WriteLine($"{nameof(SayWithRegex)} took {t.Elapsed.TotalSeconds}");
+        // Console.WriteLine($"{nameof(SayWithRegex)} took {t.Elapsed.TotalSeconds}");
 
         return temp.Length;
     }
@@ -36,7 +36,7 @@ public static class Day10
         }
 
         t.Stop();
-        Console.WriteLine($"{nameof(SayWithRegex)} took {t.Elapsed.TotalSeconds}");
+        // Console.WriteLine($"{nameof(SayWithRegex)} took {t.Elapsed.TotalSeconds}");
 
         return temp.Length;
     }

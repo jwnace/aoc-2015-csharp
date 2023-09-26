@@ -95,7 +95,7 @@ public static class Day24
 
         for (var i = smallestGroupSize; i <= largestGroupSize; i++)
         {
-            Console.WriteLine($"Getting combinations of length {i}...");
+            // Console.WriteLine($"Getting combinations of length {i}...");
 
             var stopwatch = new Stopwatch();
             stopwatch.Start();
@@ -106,7 +106,7 @@ public static class Day24
                 .ToList();
 
             stopwatch.Stop();
-            Console.WriteLine($"{stopwatch.Elapsed}");
+            // Console.WriteLine($"{stopwatch.Elapsed}");
 
             validCombinations.AddRange(combinations);
         }
