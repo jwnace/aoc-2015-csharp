@@ -4,15 +4,15 @@ namespace aoc_2015_csharp_tests;
 
 public class Day06Tests
 {
-    [Fact]
+    [Test]
     public void Part1()
     {
-        Assert.Equal(569999, Day06.Part1());
+        Day06.Part1().Should().Be(569999);
     }
 
-    [Fact]
+    [Test]
     public void Part2()
     {
-        Assert.Equal(17836115, Day06.Part2());
+        Day06.Part2().Should().Be(17836115);
     }
 }

@@ -2,15 +2,12 @@
 
     <PropertyGroup>
         <OutputType>Exe</OutputType>
-        <TargetFramework>net6.0</TargetFramework>
+        <TargetFramework>net7.0</TargetFramework>
         <RootNamespace>aoc_2015_csharp</RootNamespace>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
+        <LangVersion>11</LangVersion>
     </PropertyGroup>
-
-    <ItemGroup>
-      <PackageReference Include="Newtonsoft.Json" Version="9.0.1" />
-    </ItemGroup>
 
     <ItemGroup>
       <None Update="Day01\day01.txt">
@@ -91,6 +88,10 @@
       <None Update="Day25\day25.txt">
         <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       </None>
+    </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
     </ItemGroup>
 
 </Project>
